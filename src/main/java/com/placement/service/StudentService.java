@@ -3,9 +3,12 @@ package com.placement.service;
 
 import com.placement.dao.StudentDAO;
 import com.placement.model.Student;
+import com.placement.model.StudentDetails;
 
 import java.sql.SQLException;
 import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentService {
 
@@ -96,6 +99,18 @@ public class StudentService {
         }
     }
 
+    public List<StudentDetails> getAllStudents() {
+
+        try {
+            return studentDAO.getAllStudents();
+
+        } catch (SQLException e) {
+            System.out.println("Unable to retrieve students: "
+                    + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     private String validateStudent(Student student) {
 
         if (student.getRollNumber() == null ||
@@ -111,7 +126,7 @@ public class StudentService {
         if (!Double.isFinite(student.getCgpa()) ||
                 student.getCgpa() < 0 ||
                 student.getCgpa() > 10) {
-                return "CGPA must be between 0 and 10.";
+            return "CGPA must be between 0 and 10.";
         }
 
         if (student.getBacklogs() < 0) {
