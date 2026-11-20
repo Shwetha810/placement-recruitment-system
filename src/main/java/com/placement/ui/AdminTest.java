@@ -2,7 +2,9 @@
 package com.placement.ui;
 
 import com.placement.model.StudentDetails;
+import com.placement.model.User;
 import com.placement.service.StudentService;
+import com.placement.service.RecruiterService;
 
 import java.util.List;
 import java.util.Scanner;
@@ -14,13 +16,17 @@ public class AdminTest {
     private static final StudentService studentService =
             new StudentService();
 
+    private static final RecruiterService recruiterService =
+            new RecruiterService();
+
     public static void main(String[] args) {
 
         while (true) {
 
             System.out.println("\n===== ADMIN DASHBOARD =====");
             System.out.println("1. View All Registered Students");
-            System.out.println("2. Exit");
+            System.out.println("2. View All Recruiters");
+            System.out.println("3. Exit");
             System.out.print("Enter your choice: ");
 
             int choice;
@@ -28,7 +34,7 @@ public class AdminTest {
             try {
                 choice = Integer.parseInt(sc.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Invalid choice. Please enter a number.");
+                System.out.println("Invalid choice.");
                 continue;
             }
 
@@ -39,9 +45,11 @@ public class AdminTest {
                     break;
 
                 case 2:
-                    System.out.println(
-                            "Logging out from Admin Dashboard."
-                    );
+                    viewAllRecruiters();
+                    break;
+
+                case 3:
+                    System.out.println("Logging out from Admin Dashboard.");
                     return;
 
                 default:
@@ -89,5 +97,30 @@ public class AdminTest {
 
         System.out.println("--------------------------------");
         System.out.println("Total Students: " + students.size());
+    }
+
+    private static void viewAllRecruiters() {
+
+        List<User> recruiters =
+                recruiterService.getAllRecruiters();
+
+        if (recruiters.isEmpty()) {
+            System.out.println("\nNo registered recruiters found.");
+            return;
+        }
+
+        System.out.println("\n===== REGISTERED RECRUITERS =====");
+
+        for (User recruiter : recruiters) {
+
+            System.out.println("--------------------------------");
+            System.out.println("User ID : " + recruiter.getUserId());
+            System.out.println("Name    : " + recruiter.getFullName());
+            System.out.println("Email   : " + recruiter.getEmail());
+            System.out.println("Role    : " + recruiter.getRole());
+        }
+
+        System.out.println("--------------------------------");
+        System.out.println("Total Recruiters: " + recruiters.size());
     }
 }

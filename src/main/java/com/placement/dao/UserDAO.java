@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
 
@@ -179,5 +181,36 @@ public class UserDAO {
         }
 
         return null;
+    }
+
+    // Retrieve all registered recruiters
+    public List<User> getAllRecruiters() throws SQLException {
+
+        List<User> recruiters = new ArrayList<>();
+
+        String query = "SELECT user_id, full_name, email, role "
+                + "FROM users "
+                + "WHERE role = 'RECRUITER' "
+                + "ORDER BY user_id";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                User recruiter = new User(
+                        rs.getInt("user_id"),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        null,
+                        rs.getString("role")
+                );
+
+                recruiters.add(recruiter);
+            }
+        }
+
+        return recruiters;
     }
 }
