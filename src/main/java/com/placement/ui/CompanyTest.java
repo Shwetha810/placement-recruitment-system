@@ -9,11 +9,14 @@ import java.util.Scanner;
 
 public class CompanyTest {
 
-    private static final Scanner sc = new Scanner(System.in);
     private static final CompanyService companyService =
             new CompanyService();
 
     public static void main(String[] args) {
+        run(new Scanner(System.in));
+    }
+
+    public static void run(Scanner sc) {
 
         while (true) {
 
@@ -40,7 +43,7 @@ public class CompanyTest {
             switch (choice) {
 
                 case 1:
-                    addCompany();
+                    addCompany(sc);
                     break;
 
                 case 2:
@@ -48,23 +51,23 @@ public class CompanyTest {
                     break;
 
                 case 3:
-                    searchCompany();
+                    searchCompany(sc);
                     break;
 
                 case 4:
-                    viewCompanyById();
+                    viewCompanyById(sc);
                     break;
 
                 case 5:
-                    updateCompany();
+                    updateCompany(sc);
                     break;
 
                 case 6:
-                    deleteCompany();
+                    deleteCompany(sc);
                     break;
 
                 case 7:
-                    System.out.println("Exiting Company Management.");
+                    System.out.println("Returning to Admin Dashboard.");
                     return;
 
                 default:
@@ -73,7 +76,7 @@ public class CompanyTest {
         }
     }
 
-    private static void addCompany() {
+    private static void addCompany(Scanner sc) {
 
         System.out.println("\n===== ADD COMPANY =====");
 
@@ -116,7 +119,7 @@ public class CompanyTest {
         }
     }
 
-    private static void searchCompany() {
+    private static void searchCompany(Scanner sc) {
 
         System.out.println("\n===== SEARCH COMPANY =====");
 
@@ -136,13 +139,13 @@ public class CompanyTest {
         }
     }
 
-    private static void viewCompanyById() {
+    private static void viewCompanyById(Scanner sc) {
 
         System.out.println("\n===== VIEW COMPANY =====");
 
         System.out.print("Enter company ID: ");
 
-        int id = readCompanyId();
+        int id = readCompanyId(sc);
 
         if (id == -1) {
             return;
@@ -158,13 +161,13 @@ public class CompanyTest {
         }
     }
 
-    private static void updateCompany() {
+    private static void updateCompany(Scanner sc) {
 
         System.out.println("\n===== UPDATE COMPANY =====");
 
         System.out.print("Enter company ID: ");
 
-        int id = readCompanyId();
+        int id = readCompanyId(sc);
 
         if (id == -1) {
             return;
@@ -206,13 +209,13 @@ public class CompanyTest {
         );
     }
 
-    private static void deleteCompany() {
+    private static void deleteCompany(Scanner sc) {
 
         System.out.println("\n===== DELETE COMPANY =====");
 
         System.out.print("Enter company ID: ");
 
-        int id = readCompanyId();
+        int id = readCompanyId(sc);
 
         if (id == -1) {
             return;
@@ -232,7 +235,7 @@ public class CompanyTest {
         }
     }
 
-    private static int readCompanyId() {
+    private static int readCompanyId(Scanner sc) {
 
         try {
             int id = Integer.parseInt(sc.nextLine().trim());

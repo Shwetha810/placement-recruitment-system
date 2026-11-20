@@ -26,13 +26,15 @@ public class AdminTest {
             System.out.println("\n===== ADMIN DASHBOARD =====");
             System.out.println("1. View All Registered Students");
             System.out.println("2. View All Recruiters");
-            System.out.println("3. Exit");
+            System.out.println("3. Manage Companies");
+            System.out.println("4. Exit");
+
             System.out.print("Enter your choice: ");
 
             int choice;
 
             try {
-                choice = Integer.parseInt(sc.nextLine());
+                choice = Integer.parseInt(sc.nextLine().trim());
             } catch (NumberFormatException e) {
                 System.out.println("Invalid choice.");
                 continue;
@@ -49,7 +51,13 @@ public class AdminTest {
                     break;
 
                 case 3:
-                    System.out.println("Logging out from Admin Dashboard.");
+                    CompanyTest.run(sc);
+                    break;
+
+                case 4:
+                    System.out.println(
+                            "Logging out from Admin Dashboard."
+                    );
                     return;
 
                 default:
