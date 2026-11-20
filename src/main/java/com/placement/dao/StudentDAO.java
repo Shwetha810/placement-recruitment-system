@@ -3,12 +3,15 @@ package com.placement.dao;
 
 import com.placement.config.DBConnection;
 import com.placement.model.Student;
+import com.placement.model.StudentDetails;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentDAO {
 
@@ -108,5 +111,56 @@ public class StudentDAO {
 
             return ps.executeUpdate() > 0;
         }
+    }
+
+    public List<StudentDetails> getAllStudents()
+            throws SQLException {
+
+        List<StudentDetails> students = new ArrayList<>();
+
+        String query = """
+                SELECT
+                    sp.student_id,
+                    u.user_id,
+                    u.full_name,
+                    u.email,
+                    sp.roll_number,
+                    sp.branch,
+                    sp.cgpa,
+                    sp.backlogs,
+                    sp.graduation_year,
+                    sp.phone
+                FROM users u
+                JOIN student_profiles sp
+                    ON u.user_id = sp.user_id
+                WHERE u.role = 'STUDENT'
+                ORDER BY sp.student_id
+                """;
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                StudentDetails student = new StudentDetails();
+
+                student.setStudentId(rs.getInt("student_id"));
+                student.setUserId(rs.getInt("user_id"));
+                student.setFullName(rs.getString("full_name"));
+                student.setEmail(rs.getString("email"));
+                student.setRollNumber(rs.getString("roll_number"));
+                student.setBranch(rs.getString("branch"));
+                student.setCgpa(rs.getBigDecimal("cgpa"));
+                student.setBacklogs(rs.getInt("backlogs"));
+                student.setGraduationYear(
+                        rs.getInt("graduation_year"));
+                student.setPhone(rs.getString("phone"));
+
+                students.add(student);
+            }
+        }
+
+        return students;
     }
 }
