@@ -28,7 +28,8 @@ public class AdminTest {
             System.out.println("2. View All Recruiters");
             System.out.println("3. Manage Companies");
             System.out.println("4. Manage Job Postings");
-            System.out.println("5. Exit");
+            System.out.println("5. Manage Applications");
+            System.out.println("6. Exit");
 
             System.out.print("Enter your choice: ");
 
@@ -60,9 +61,12 @@ public class AdminTest {
                     break;
 
                 case 5:
+                    AdminApplicationTest.run(sc);
+                    break;
+
+                case 6:
                     System.out.println(
-                            "Logging out from Admin Dashboard."
-                    );
+                            "Logging out from Admin Dashboard.");
                     return;
 
                 default:
