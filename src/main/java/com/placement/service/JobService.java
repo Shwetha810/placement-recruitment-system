@@ -23,7 +23,6 @@ public class JobService {
         }
 
         try {
-
             if (companyDAO.findById(job.getCompanyId()) == null) {
                 return "Company does not exist.";
             }
@@ -39,6 +38,96 @@ public class JobService {
 
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
+        }
+    }
+
+    public String updateJob(Job job) {
+
+        String validation = validateJob(job);
+
+        if (validation != null) {
+            return validation;
+        }
+
+        if (job.getJobId() <= 0) {
+            return "Invalid job ID.";
+        }
+
+        try {
+            if (jobDAO.findById(job.getJobId()) == null) {
+                return "Job not found.";
+            }
+
+            if (companyDAO.findById(job.getCompanyId()) == null) {
+                return "Company does not exist.";
+            }
+
+            boolean updated = jobDAO.updateJob(job);
+
+            return updated
+                    ? "Job details updated successfully."
+                    : "Unable to update job.";
+
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
+        }
+    }
+
+    public String closeJob(int jobId) {
+        return changeJobStatus(jobId, "CLOSED");
+    }
+
+    public String reopenJob(int jobId) {
+        return changeJobStatus(jobId, "OPEN");
+    }
+
+    private String changeJobStatus(int jobId, String status) {
+
+        if (jobId <= 0) {
+            return "Invalid job ID.";
+        }
+
+        try {
+            Job job = jobDAO.findById(jobId);
+
+            if (job == null) {
+                return "Job not found.";
+            }
+
+            if (status.equals(job.getStatus())) {
+                return "Job is already " + status + ".";
+            }
+
+            boolean updated = jobDAO.updateJobStatus(jobId, status);
+
+            return updated
+                    ? "Job status changed to " + status + " successfully."
+                    : "Unable to update job status.";
+
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
+        }
+    }
+
+    public String deleteJob(int jobId) {
+
+        if (jobId <= 0) {
+            return "Invalid job ID.";
+        }
+
+        try {
+            if (jobDAO.findById(jobId) == null) {
+                return "Job not found.";
+            }
+
+            boolean deleted = jobDAO.deleteJob(jobId);
+
+            return deleted
+                    ? "Job deleted successfully."
+                    : "Unable to delete job.";
+
+        } catch (SQLException e) {
+            return "Unable to delete job: " + e.getMessage();
         }
     }
 
@@ -69,6 +158,58 @@ public class JobService {
         }
     }
 
+    public List<Job> searchByCompanyName(String companyName) {
+
+        if (companyName == null || companyName.isBlank()) {
+            return List.of();
+        }
+
+        try {
+            return jobDAO.searchByCompanyName(companyName.trim());
+
+        } catch (SQLException e) {
+            System.out.println("Unable to search jobs: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    public List<Job> searchByLocation(String location) {
+
+        if (location == null || location.isBlank()) {
+            return List.of();
+        }
+
+        try {
+            return jobDAO.searchByLocation(location.trim());
+
+        } catch (SQLException e) {
+            System.out.println("Unable to search jobs: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    public List<Job> filterJobs(String employmentType, String status) {
+
+        if (employmentType != null &&
+                employmentType.isBlank()) {
+            return List.of();
+        }
+
+        if (status != null &&
+                !status.equals("OPEN") &&
+                !status.equals("CLOSED")) {
+            return List.of();
+        }
+
+        try {
+            return jobDAO.filterJobs(employmentType, status);
+
+        } catch (SQLException e) {
+            System.out.println("Unable to filter jobs: " + e.getMessage());
+            return List.of();
+        }
+    }
+
     private String validateJob(Job job) {
 
         if (job == null) {
@@ -92,6 +233,11 @@ public class JobService {
         if (job.getEmploymentType() == null ||
                 job.getEmploymentType().isBlank()) {
             return "Employment type cannot be empty.";
+        }
+
+        if (job.getLocation() == null ||
+                job.getLocation().isBlank()) {
+            return "Location cannot be empty.";
         }
 
         if (job.getMinCgpa() == null ||
@@ -126,8 +272,7 @@ public class JobService {
         }
 
         if (job.getApplicationDeadline() == null ||
-                !job.getApplicationDeadline().isAfter(
-                        LocalDate.now())) {
+                !job.getApplicationDeadline().isAfter(LocalDate.now())) {
             return "Application deadline must be a future date.";
         }
 
@@ -137,8 +282,7 @@ public class JobService {
         }
 
         if (job.getEligibleBranches().stream().anyMatch(
-                branch -> branch == null ||
-                        branch.isBlank())) {
+                branch -> branch == null || branch.isBlank())) {
             return "Branch names cannot be empty.";
         }
 
