@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Job {
 
+    private int recruiterId;
     private int jobId;
     private int companyId;
     private String jobTitle;
@@ -136,4 +137,12 @@ public class Job {
     public void setEligibleBranches(List<String> eligibleBranches) {
         this.eligibleBranches = eligibleBranches;
     }
+
+    public int getRecruiterId() {
+    return recruiterId;
+}
+
+public void setRecruiterId(int recruiterId) {
+    this.recruiterId = recruiterId;
+}
 }

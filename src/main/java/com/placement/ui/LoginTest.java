@@ -16,67 +16,75 @@ public class LoginTest {
         UserService userService = new UserService();
         StudentProfileDAO profileDAO = new StudentProfileDAO();
 
-        System.out.println("\n===== PLACEMENT MANAGEMENT SYSTEM =====");
-        System.out.println("1. Login");
-        System.out.println("2. Exit");
-        System.out.print("Enter your choice: ");
+        while (true) {
 
-        String choice = sc.nextLine();
+            System.out.println("\n===== PLACEMENT MANAGEMENT SYSTEM =====");
+            System.out.println("1. Login");
+            System.out.println("2. Exit");
+            System.out.print("Enter your choice: ");
 
-        if (!choice.equals("1")) {
-            System.out.println("Exiting...");
-            return;
-        }
+            String choice = sc.nextLine().trim();
 
-        System.out.print("Enter email: ");
-        String email = sc.nextLine();
-
-        System.out.print("Enter password: ");
-        String password = sc.nextLine();
-
-        try {
-            User user = userService.login(email, password);
-
-            if (user == null) {
-                System.out.println("\nInvalid email or password.");
-                return;
+            if (choice.equals("2")) {
+                System.out.println("Exiting...");
+                break;
             }
 
-            System.out.println("\nLogin successful!");
-            System.out.println("Welcome, " + user.getFullName());
-            System.out.println("Role: " + user.getRole());
+            if (!choice.equals("1")) {
+                System.out.println("Invalid choice.");
+                continue;
+            }
 
-            switch (user.getRole().toUpperCase()) {
+            System.out.print("Enter email: ");
+            String email = sc.nextLine();
 
-                case "STUDENT":
+            System.out.print("Enter password: ");
+            String password = sc.nextLine();
 
-                    int studentId = profileDAO.getStudentIdByUserId(
-                            user.getUserId());
+            try {
+                User user = userService.login(email, password);
 
-                    if (studentId == -1) {
-                        System.out.println(
-                                "Student profile not found. Please complete your profile first.");
-                        return;
+                if (user == null) {
+                    System.out.println("\nInvalid email or password.");
+                    continue;
+                }
+
+                System.out.println("\nLogin successful!");
+                System.out.println("Welcome, " + user.getFullName());
+                System.out.println("Role: " + user.getRole());
+
+                switch (user.getRole().toUpperCase()) {
+
+                    case "STUDENT" -> {
+                        int studentId =
+                                profileDAO.getStudentIdByUserId(
+                                        user.getUserId());
+
+                        if (studentId == -1) {
+                            System.out.println(
+                                    "Student profile not found. Please complete your profile first.");
+                            continue;
+                        }
+
+                        studentDashboard(sc, studentId);
                     }
 
-                    studentDashboard(sc, studentId);
-                    break;
+                    case "RECRUITER" ->
+                            RecruiterTest.run(sc, user.getUserId());
 
-                case "RECRUITER":
-                    recruiterDashboard();
-                    break;
+                    case "ADMIN" ->
+                            AdminTest.main(new String[0]);
 
-                case "ADMIN":
-                    adminDashboard();
-                    break;
+                    default ->
+                            System.out.println("Invalid user role.");
+                }
 
-                default:
-                    System.out.println("Invalid user role.");
+            } catch (SQLException e) {
+                System.out.println("Database error: " + e.getMessage());
             }
-
-        } catch (SQLException e) {
-            System.out.println("Database error: " + e.getMessage());
         }
+
+        sc.close();
     }
 
     private static void studentDashboard(Scanner sc, int studentId) {
@@ -89,39 +97,17 @@ public class LoginTest {
             System.out.println("3. Logout");
             System.out.print("Enter your choice: ");
 
-            String choice = sc.nextLine();
+            String choice = sc.nextLine().trim();
 
             switch (choice) {
-
-                case "1":
-                    EligibilityTest.runForStudent(studentId);
-                    break;
-
-                case "2":
-                    ApplicationTest.runForStudent(studentId);
-                    break;
-
-                case "3":
+                case "1" -> EligibilityTest.runForStudent(studentId);
+                case "2" -> ApplicationTest.runForStudent(studentId);
+                case "3" -> {
                     System.out.println("Logged out successfully.");
                     return;
-
-                default:
-                    System.out.println("Invalid choice.");
+                }
+                default -> System.out.println("Invalid choice.");
             }
         }
-    }
-
-    private static void recruiterDashboard() {
-
-        System.out.println("\n===== RECRUITER DASHBOARD =====");
-        RecruiterTest.main(new String[0]);
-    }
-
-    private static void adminDashboard() {
-
-        System.out.println("\n===== ADMIN DASHBOARD =====");
-        System.out.println("Welcome to the Admin Dashboard.");
-        System.out.println("Admin management features will be added next.");
-        System.out.println("Logged out.");
     }
 }

@@ -14,10 +14,11 @@ public class RegisterTest {
         Scanner sc = new Scanner(System.in);
         UserService userService = new UserService();
 
-        System.out.println("\n===== STUDENT REGISTRATION =====");
+        System.out.println("\n===== USER REGISTRATION =====");
         System.out.println("1. Register New Student");
         System.out.println("2. Complete Existing Student Profile");
-        System.out.println("3. Exit");
+        System.out.println("3. Register New Recruiter");
+        System.out.println("4. Exit");
         System.out.print("Enter your choice: ");
 
         String choice = sc.nextLine();
@@ -34,6 +35,10 @@ public class RegisterTest {
                     break;
 
                 case "3":
+                    registerNewRecruiter(sc, userService);
+                    break;
+
+                case "4":
                     System.out.println("Exiting...");
                     break;
 
@@ -46,9 +51,13 @@ public class RegisterTest {
 
         } catch (SQLException e) {
             if ("23000".equals(e.getSQLState())) {
-                System.out.println("\nDuplicate email, roll number, or existing profile.");
+                System.out.println(
+                        "\nDuplicate email, roll number, or existing profile."
+                );
             } else {
-                System.out.println("\nDatabase error: " + e.getMessage());
+                System.out.println(
+                        "\nDatabase error: " + e.getMessage()
+                );
             }
         }
     }
@@ -78,8 +87,12 @@ public class RegisterTest {
         );
 
         if (result) {
-            System.out.println("\nStudent registration completed successfully!");
-            System.out.println("User account and academic profile created.");
+            System.out.println(
+                    "\nStudent registration completed successfully!"
+            );
+            System.out.println(
+                    "User account and academic profile created."
+            );
         }
     }
 
@@ -105,7 +118,37 @@ public class RegisterTest {
         );
 
         if (result) {
-            System.out.println("\nStudent profile created successfully!");
+            System.out.println(
+                    "\nStudent profile created successfully!"
+            );
+        }
+    }
+
+    private static void registerNewRecruiter(Scanner sc,
+                                             UserService userService)
+            throws SQLException {
+
+        System.out.println("\n--- New Recruiter Details ---");
+
+        System.out.print("Full name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Email: ");
+        String email = sc.nextLine();
+
+        System.out.print("Password: ");
+        String password = sc.nextLine();
+
+        boolean result = userService.registerRecruiter(
+                name, email, password
+        );
+
+        if (result) {
+            System.out.println(
+                    "\nRecruiter registration completed successfully!"
+            );
+            System.out.println("Recruiter account created.");
+            System.out.println("You can now log in as a recruiter.");
         }
     }
 

@@ -38,6 +38,25 @@ public class UserService {
         );
     }
 
+    public boolean registerRecruiter(String fullName, String email,
+                                     String password) throws SQLException {
+
+        validateName(fullName);
+        validateEmail(email);
+        validatePassword(password);
+
+        String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(12));
+
+        User recruiter = new User(
+                fullName.trim(),
+                email.trim().toLowerCase(),
+                passwordHash,
+                "RECRUITER"
+        );
+
+        return userDAO.registerUser(recruiter);
+    }
+
     public boolean completeStudentProfile(String email, String password,
                                            String rollNumber, String branch,
                                            BigDecimal cgpa, int backlogs,
@@ -51,13 +70,17 @@ public class UserService {
         }
 
         if (!"STUDENT".equalsIgnoreCase(user.getRole())) {
-            throw new IllegalArgumentException("Only student accounts can have student profiles.");
+            throw new IllegalArgumentException(
+                    "Only student accounts can have student profiles."
+            );
         }
 
         validateProfile(rollNumber, branch, cgpa, backlogs, graduationYear);
 
         if (userDAO.hasStudentProfile(user.getUserId())) {
-            throw new IllegalArgumentException("A student profile already exists for this account.");
+            throw new IllegalArgumentException(
+                    "A student profile already exists for this account."
+            );
         }
 
         return userDAO.addStudentProfile(
@@ -98,7 +121,9 @@ public class UserService {
 
         if (email == null ||
                 !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new IllegalArgumentException("Enter a valid email address.");
+            throw new IllegalArgumentException(
+                    "Enter a valid email address."
+            );
         }
     }
 
@@ -116,24 +141,34 @@ public class UserService {
                                  int graduationYear) {
 
         if (rollNumber == null || rollNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("Roll number cannot be empty.");
+            throw new IllegalArgumentException(
+                    "Roll number cannot be empty."
+            );
         }
 
         if (branch == null || branch.trim().isEmpty()) {
-            throw new IllegalArgumentException("Branch cannot be empty.");
+            throw new IllegalArgumentException(
+                    "Branch cannot be empty."
+            );
         }
 
         if (cgpa == null || cgpa.compareTo(BigDecimal.ZERO) < 0 ||
                 cgpa.compareTo(BigDecimal.TEN) > 0) {
-            throw new IllegalArgumentException("CGPA must be between 0 and 10.");
+            throw new IllegalArgumentException(
+                    "CGPA must be between 0 and 10."
+            );
         }
 
         if (backlogs < 0) {
-            throw new IllegalArgumentException("Backlogs cannot be negative.");
+            throw new IllegalArgumentException(
+                    "Backlogs cannot be negative."
+            );
         }
 
         if (graduationYear < 2000 || graduationYear > 2100) {
-            throw new IllegalArgumentException("Enter a valid graduation year.");
+            throw new IllegalArgumentException(
+                    "Enter a valid graduation year."
+            );
         }
     }
 }
