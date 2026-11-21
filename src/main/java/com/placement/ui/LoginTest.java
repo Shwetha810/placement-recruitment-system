@@ -18,73 +18,101 @@ public class LoginTest {
 
         while (true) {
 
-            System.out.println("\n===== PLACEMENT MANAGEMENT SYSTEM =====");
+            System.out.println("\n==================================");
+            System.out.println("   PLACEMENT MANAGEMENT SYSTEM");
+            System.out.println("==================================");
             System.out.println("1. Login");
-            System.out.println("2. Exit");
+            System.out.println("2. Register");
+            System.out.println("3. Exit");
             System.out.print("Enter your choice: ");
 
             String choice = sc.nextLine().trim();
 
-            if (choice.equals("2")) {
-                System.out.println("Exiting...");
-                break;
-            }
+            switch (choice) {
 
-            if (!choice.equals("1")) {
-                System.out.println("Invalid choice.");
-                continue;
-            }
+                case "1":
+                    login(sc, userService, profileDAO);
+                    break;
 
-            System.out.print("Enter email: ");
-            String email = sc.nextLine();
+                case "2":
+                    RegisterTest.main(new String[0]);
+                    break;
 
-            System.out.print("Enter password: ");
-            String password = sc.nextLine();
+                case "3":
+                    System.out.println("\nThank you for using the system.");
+                    return;
 
-            try {
-                User user = userService.login(email, password);
-
-                if (user == null) {
-                    System.out.println("\nInvalid email or password.");
-                    continue;
-                }
-
-                System.out.println("\nLogin successful!");
-                System.out.println("Welcome, " + user.getFullName());
-                System.out.println("Role: " + user.getRole());
-
-                switch (user.getRole().toUpperCase()) {
-
-                    case "STUDENT" -> {
-                        int studentId =
-                                profileDAO.getStudentIdByUserId(
-                                        user.getUserId());
-
-                        if (studentId == -1) {
-                            System.out.println(
-                                    "Student profile not found. Please complete your profile first.");
-                            continue;
-                        }
-
-                        studentDashboard(sc, studentId);
-                    }
-
-                    case "RECRUITER" ->
-                            RecruiterTest.run(sc, user.getUserId());
-
-                    case "ADMIN" ->
-                            AdminTest.main(new String[0]);
-
-                    default ->
-                            System.out.println("Invalid user role.");
-                }
-
-            } catch (SQLException e) {
-                System.out.println("Database error: " + e.getMessage());
+                default:
+                    System.out.println("Invalid choice.");
             }
         }
+    }
 
-        sc.close();
+    private static void login(Scanner sc,
+                              UserService userService,
+                              StudentProfileDAO profileDAO) {
+
+        System.out.println("\n===== LOGIN =====");
+
+        System.out.print("Enter email: ");
+        String email = sc.nextLine();
+
+        System.out.print("Enter password: ");
+        String password = sc.nextLine();
+
+        try {
+
+            User user = userService.login(email, password);
+
+            if (user == null) {
+                System.out.println("\nInvalid email or password.");
+                return;
+            }
+
+            System.out.println("\nLogin successful!");
+            System.out.println("Welcome, " + user.getFullName());
+            System.out.println("Role: " + user.getRole());
+
+            switch (user.getRole().toUpperCase()) {
+
+                case "STUDENT":
+
+                    int studentId = profileDAO.getStudentIdByUserId(
+                            user.getUserId()
+                    );
+
+                    if (studentId == -1) {
+                        System.out.println(
+                                "Student profile not found. "
+                                + "Please complete your profile first."
+                        );
+                        return;
+                    }
+
+                    studentDashboard(sc, studentId);
+                    break;
+
+                case "RECRUITER":
+
+                    RecruiterTest.run(sc, user.getUserId());
+                    break;
+
+                case "ADMIN":
+
+                    AdminTest.run(sc);
+                    break;
+
+                default:
+
+                    System.out.println("Invalid user role.");
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Database error: " + e.getMessage()
+            );
+        }
     }
 
     private static void studentDashboard(Scanner sc, int studentId) {
@@ -100,13 +128,23 @@ public class LoginTest {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> EligibilityTest.runForStudent(studentId);
-                case "2" -> ApplicationTest.runForStudent(studentId);
-                case "3" -> {
-                    System.out.println("Logged out successfully.");
+
+                case "1":
+                    EligibilityTest.runForStudent(studentId);
+                    break;
+
+                case "2":
+                    ApplicationTest.runForStudent(studentId);
+                    break;
+
+                case "3":
+                    System.out.println(
+                            "\nLogged out successfully."
+                    );
                     return;
-                }
-                default -> System.out.println("Invalid choice.");
+
+                default:
+                    System.out.println("Invalid choice.");
             }
         }
     }
