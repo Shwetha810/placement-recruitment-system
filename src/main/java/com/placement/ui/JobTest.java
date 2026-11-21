@@ -13,10 +13,13 @@ import java.util.Scanner;
 
 public class JobTest {
 
-    private static final Scanner sc = new Scanner(System.in);
     private static final JobService jobService = new JobService();
 
     public static void main(String[] args) {
+        run(new Scanner(System.in));
+    }
+
+    public static void run(Scanner sc) {
 
         while (true) {
 
@@ -32,7 +35,7 @@ public class JobTest {
             switch (choice) {
 
                 case "1":
-                    postJob();
+                    postJob(sc);
                     break;
 
                 case "2":
@@ -40,11 +43,11 @@ public class JobTest {
                     break;
 
                 case "3":
-                    viewJobById();
+                    viewJobById(sc);
                     break;
 
                 case "4":
-                    System.out.println("Exiting Job Management.");
+                    System.out.println("Returning to Admin Dashboard.");
                     return;
 
                 default:
@@ -53,7 +56,7 @@ public class JobTest {
         }
     }
 
-    private static void postJob() {
+    private static void postJob(Scanner sc) {
 
         try {
 
@@ -103,6 +106,7 @@ public class JobTest {
             job.setStatus("OPEN");
 
             System.out.print("Enter Eligible Branches (comma-separated): ");
+
             List<String> branches = Arrays.stream(sc.nextLine().split(","))
                     .map(String::trim)
                     .filter(branch -> !branch.isEmpty())
@@ -140,7 +144,7 @@ public class JobTest {
         }
     }
 
-    private static void viewJobById() {
+    private static void viewJobById(Scanner sc) {
 
         try {
 
