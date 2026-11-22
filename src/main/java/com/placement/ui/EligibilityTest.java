@@ -5,19 +5,27 @@ import com.placement.model.Job;
 import com.placement.service.EligibilityService;
 
 import java.util.List;
-import java.util.Scanner;
 
 public class EligibilityTest {
 
+    private static final EligibilityService service =
+            new EligibilityService();
+
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
+        java.util.Scanner sc = new java.util.Scanner(System.in);
 
         System.out.println("\n===== STUDENT JOB ELIGIBILITY =====");
         System.out.print("Enter Student ID: ");
 
         try {
             int studentId = Integer.parseInt(sc.nextLine());
+
+            if (studentId <= 0) {
+                System.out.println("Invalid student ID.");
+                return;
+            }
+
             runForStudent(studentId);
 
         } catch (NumberFormatException e) {
@@ -27,18 +35,16 @@ public class EligibilityTest {
 
     public static void runForStudent(int studentId) {
 
-        EligibilityService service = new EligibilityService();
-
-        System.out.println("\n===== STUDENT JOB ELIGIBILITY =====");
+        System.out.println("\n===== ELIGIBLE JOB POSTINGS =====");
 
         List<Job> jobs = service.getEligibleJobs(studentId);
 
         if (jobs.isEmpty()) {
-            System.out.println("\nNo eligible jobs found for this student.");
+            System.out.println("No eligible jobs found for this student.");
             return;
         }
 
-        System.out.println("\nEligible Jobs Found: " + jobs.size());
+        System.out.println("Eligible Jobs Found: " + jobs.size());
 
         for (Job job : jobs) {
 

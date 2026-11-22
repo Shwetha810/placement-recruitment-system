@@ -9,12 +9,12 @@ import java.util.Scanner;
 
 public class ApplicationTest {
 
-    private static final Scanner sc = new Scanner(System.in);
-
     private static final ApplicationService service =
             new ApplicationService();
 
     public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
 
         System.out.println("\n===== JOB APPLICATION MANAGEMENT =====");
         System.out.print("Enter Student ID: ");
@@ -27,7 +27,7 @@ public class ApplicationTest {
                 return;
             }
 
-            runForStudent(studentId);
+            runForStudent(studentId, sc);
 
         } catch (NumberFormatException e) {
             System.out.println("Please enter a valid student ID.");
@@ -35,6 +35,10 @@ public class ApplicationTest {
     }
 
     public static void runForStudent(int studentId) {
+        runForStudent(studentId, new Scanner(System.in));
+    }
+
+    public static void runForStudent(int studentId, Scanner sc) {
 
         while (true) {
 
@@ -42,16 +46,16 @@ public class ApplicationTest {
             System.out.println("1. Apply for a Job");
             System.out.println("2. View My Applications");
             System.out.println("3. Withdraw Application");
-            System.out.println("4. Exit");
+            System.out.println("4. Back to Student Dashboard");
 
             System.out.print("Enter choice: ");
 
-            String choice = sc.nextLine();
+            String choice = sc.nextLine().trim();
 
             switch (choice) {
 
                 case "1":
-                    applyForJob(studentId);
+                    applyForJob(studentId, sc);
                     break;
 
                 case "2":
@@ -59,11 +63,10 @@ public class ApplicationTest {
                     break;
 
                 case "3":
-                    withdrawApplication(studentId);
+                    withdrawApplication(studentId, sc);
                     break;
 
                 case "4":
-                    System.out.println("Exiting Application Management.");
                     return;
 
                 default:
@@ -72,11 +75,16 @@ public class ApplicationTest {
         }
     }
 
-    private static void applyForJob(int studentId) {
+    private static void applyForJob(int studentId, Scanner sc) {
 
         try {
             System.out.print("Enter Job ID: ");
             int jobId = Integer.parseInt(sc.nextLine());
+
+            if (jobId <= 0) {
+                System.out.println("Job ID must be greater than zero.");
+                return;
+            }
 
             String result = service.applyForJob(studentId, jobId);
 
@@ -102,33 +110,38 @@ public class ApplicationTest {
         for (Application application : applications) {
 
             System.out.println("\n--------------------------------");
-            System.out.println("Application ID: " +
-                    application.getApplicationId());
+            System.out.println("Application ID: "
+                    + application.getApplicationId());
 
-            System.out.println("Job ID: " +
-                    application.getJobId());
+            System.out.println("Job ID: "
+                    + application.getJobId());
 
-            System.out.println("Job Title: " +
-                    application.getJobTitle());
+            System.out.println("Job Title: "
+                    + application.getJobTitle());
 
-            System.out.println("Company: " +
-                    application.getCompanyName());
+            System.out.println("Company: "
+                    + application.getCompanyName());
 
-            System.out.println("Application Status: " +
-                    application.getApplicationStatus());
+            System.out.println("Application Status: "
+                    + application.getApplicationStatus());
 
-            System.out.println("Applied At: " +
-                    application.getAppliedAt());
+            System.out.println("Applied At: "
+                    + application.getAppliedAt());
 
             System.out.println("--------------------------------");
         }
     }
 
-    private static void withdrawApplication(int studentId) {
+    private static void withdrawApplication(int studentId, Scanner sc) {
 
         try {
             System.out.print("Enter Application ID: ");
             int applicationId = Integer.parseInt(sc.nextLine());
+
+            if (applicationId <= 0) {
+                System.out.println("Application ID must be greater than zero.");
+                return;
+            }
 
             String result = service.withdrawApplication(
                     applicationId, studentId);
