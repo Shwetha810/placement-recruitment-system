@@ -10,6 +10,7 @@ import com.placement.model.Job;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class ApplicationService {
@@ -43,7 +44,8 @@ public class ApplicationService {
                     .anyMatch(job -> job.getJobId() == jobId);
 
             if (!eligible) {
-                return "You are not eligible for this job.";
+                return "You are not eligible for this job, "
+                        + "or the job is not available.";
             }
 
             Application application = new Application();
@@ -66,14 +68,20 @@ public class ApplicationService {
                 return "You have already applied for this job.";
             }
 
-            return "Database error: " + e.getMessage();
+            return "Database error while submitting application: "
+                    + e.getMessage();
         }
     }
 
     public List<Application> getMyApplications(int studentId) {
 
+        if (studentId <= 0) {
+            return List.of();
+        }
+
         try {
             return applicationDAO.getApplicationsByStudentId(studentId);
+
         } catch (SQLException e) {
             System.out.println("Error retrieving applications: "
                     + e.getMessage());
@@ -101,7 +109,8 @@ public class ApplicationService {
             return "Application not found or cannot be withdrawn.";
 
         } catch (SQLException e) {
-            return "Database error: " + e.getMessage();
+            return "Database error while withdrawing application: "
+                    + e.getMessage();
         }
     }
 
@@ -113,6 +122,7 @@ public class ApplicationService {
 
         try {
             return applicationDAO.getApplicantsByJobId(jobId);
+
         } catch (SQLException e) {
             System.out.println("Error retrieving applicants: "
                     + e.getMessage());
@@ -127,17 +137,23 @@ public class ApplicationService {
             return "Invalid application ID.";
         }
 
-        if (status == null || !ALLOWED_STATUSES.contains(
-                status.trim().toUpperCase())) {
-            return "Invalid application status.";
+        if (status == null || status.isBlank()) {
+            return "Application status cannot be empty.";
+        }
+
+        String normalizedStatus =
+                status.trim().toUpperCase(Locale.ROOT);
+
+        if (!ALLOWED_STATUSES.contains(normalizedStatus)) {
+            return "Invalid application status. Allowed values: "
+                    + ALLOWED_STATUSES;
         }
 
         try {
 
             boolean updated =
                     applicationDAO.updateApplicationStatus(
-                            applicationId,
-                            status.trim().toUpperCase());
+                            applicationId, normalizedStatus);
 
             if (updated) {
                 return "Application status updated successfully.";
@@ -146,7 +162,8 @@ public class ApplicationService {
             return "Application not found or status cannot be updated.";
 
         } catch (SQLException e) {
-            return "Database error: " + e.getMessage();
+            return "Database error while updating application status: "
+                    + e.getMessage();
         }
     }
 
@@ -158,6 +175,7 @@ public class ApplicationService {
 
         try {
             return applicationDAO.getApplicationStatistics(jobId);
+
         } catch (SQLException e) {
             System.out.println("Error retrieving statistics: "
                     + e.getMessage());

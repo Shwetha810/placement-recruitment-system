@@ -7,7 +7,11 @@ import com.placement.model.Job;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.Year;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public class JobService {
 
@@ -23,9 +27,12 @@ public class JobService {
         }
 
         try {
+
             if (companyDAO.findById(job.getCompanyId()) == null) {
                 return "Company does not exist.";
             }
+
+            job.setStatus(job.getStatus().trim().toUpperCase(Locale.ROOT));
 
             boolean added = jobDAO.addJob(job);
 
@@ -37,11 +44,19 @@ public class JobService {
             return "Unable to post job.";
 
         } catch (SQLException e) {
-            return "Database error: " + e.getMessage();
+            return "Database error while posting job: " + e.getMessage();
         }
     }
 
     public String updateJob(Job job) {
+
+        if (job == null) {
+            return "Job details cannot be empty.";
+        }
+
+        if (job.getJobId() <= 0) {
+            return "Invalid job ID.";
+        }
 
         String validation = validateJob(job);
 
@@ -49,11 +64,8 @@ public class JobService {
             return validation;
         }
 
-        if (job.getJobId() <= 0) {
-            return "Invalid job ID.";
-        }
-
         try {
+
             if (jobDAO.findById(job.getJobId()) == null) {
                 return "Job not found.";
             }
@@ -62,6 +74,8 @@ public class JobService {
                 return "Company does not exist.";
             }
 
+            job.setStatus(job.getStatus().trim().toUpperCase(Locale.ROOT));
+
             boolean updated = jobDAO.updateJob(job);
 
             return updated
@@ -69,7 +83,7 @@ public class JobService {
                     : "Unable to update job.";
 
         } catch (SQLException e) {
-            return "Database error: " + e.getMessage();
+            return "Database error while updating job: " + e.getMessage();
         }
     }
 
@@ -88,13 +102,14 @@ public class JobService {
         }
 
         try {
+
             Job job = jobDAO.findById(jobId);
 
             if (job == null) {
                 return "Job not found.";
             }
 
-            if (status.equals(job.getStatus())) {
+            if (status.equalsIgnoreCase(job.getStatus())) {
                 return "Job is already " + status + ".";
             }
 
@@ -105,7 +120,8 @@ public class JobService {
                     : "Unable to update job status.";
 
         } catch (SQLException e) {
-            return "Database error: " + e.getMessage();
+            return "Database error while changing job status: "
+                    + e.getMessage();
         }
     }
 
@@ -116,6 +132,7 @@ public class JobService {
         }
 
         try {
+
             if (jobDAO.findById(jobId) == null) {
                 return "Job not found.";
             }
@@ -190,19 +207,26 @@ public class JobService {
 
     public List<Job> filterJobs(String employmentType, String status) {
 
-        if (employmentType != null &&
-                employmentType.isBlank()) {
+        if (employmentType != null && employmentType.isBlank()) {
             return List.of();
         }
 
-        if (status != null &&
-                !status.equals("OPEN") &&
-                !status.equals("CLOSED")) {
+        String normalizedType = employmentType == null
+                ? null
+                : employmentType.trim();
+
+        String normalizedStatus = status == null
+                ? null
+                : status.trim().toUpperCase(Locale.ROOT);
+
+        if (normalizedStatus != null &&
+                !normalizedStatus.equals("OPEN") &&
+                !normalizedStatus.equals("CLOSED")) {
             return List.of();
         }
 
         try {
-            return jobDAO.filterJobs(employmentType, status);
+            return jobDAO.filterJobs(normalizedType, normalizedStatus);
 
         } catch (SQLException e) {
             System.out.println("Unable to filter jobs: " + e.getMessage());
@@ -225,6 +249,10 @@ public class JobService {
             return "Job title cannot be empty.";
         }
 
+        if (job.getJobTitle().trim().length() > 150) {
+            return "Job title cannot exceed 150 characters.";
+        }
+
         if (job.getJobDescription() == null ||
                 job.getJobDescription().isBlank()) {
             return "Job description cannot be empty.";
@@ -235,9 +263,17 @@ public class JobService {
             return "Employment type cannot be empty.";
         }
 
+        if (job.getEmploymentType().trim().length() > 50) {
+            return "Employment type cannot exceed 50 characters.";
+        }
+
         if (job.getLocation() == null ||
                 job.getLocation().isBlank()) {
             return "Location cannot be empty.";
+        }
+
+        if (job.getLocation().trim().length() > 100) {
+            return "Location cannot exceed 100 characters.";
         }
 
         if (job.getMinCgpa() == null ||
@@ -250,7 +286,10 @@ public class JobService {
             return "Maximum backlogs cannot be negative.";
         }
 
-        if (job.getGraduationYear() < 2020) {
+        int currentYear = Year.now().getValue();
+
+        if (job.getGraduationYear() < 2000 ||
+                job.getGraduationYear() > currentYear + 6) {
             return "Invalid graduation year.";
         }
 
@@ -268,11 +307,14 @@ public class JobService {
                 job.getMaxPackage() != null &&
                 job.getMaxPackage().compareTo(
                         job.getMinPackage()) < 0) {
-            return "Maximum package must be greater than minimum package.";
+            return "Maximum package must be greater than or equal to minimum package.";
         }
 
-        if (job.getApplicationDeadline() == null ||
-                !job.getApplicationDeadline().isAfter(LocalDate.now())) {
+        if (job.getApplicationDeadline() == null) {
+            return "Application deadline is required.";
+        }
+
+        if (!job.getApplicationDeadline().isAfter(LocalDate.now())) {
             return "Application deadline must be a future date.";
         }
 
@@ -281,14 +323,25 @@ public class JobService {
             return "At least one eligible branch is required.";
         }
 
-        if (job.getEligibleBranches().stream().anyMatch(
-                branch -> branch == null || branch.isBlank())) {
-            return "Branch names cannot be empty.";
+        Set<String> branches = new HashSet<>();
+
+        for (String branch : job.getEligibleBranches()) {
+
+            if (branch == null || branch.isBlank()) {
+                return "Branch names cannot be empty.";
+            }
+
+            String normalizedBranch =
+                    branch.trim().toUpperCase(Locale.ROOT);
+
+            if (!branches.add(normalizedBranch)) {
+                return "Duplicate eligible branch: " + branch;
+            }
         }
 
         if (job.getStatus() == null ||
-                !(job.getStatus().equals("OPEN") ||
-                        job.getStatus().equals("CLOSED"))) {
+                (!job.getStatus().trim().equalsIgnoreCase("OPEN") &&
+                 !job.getStatus().trim().equalsIgnoreCase("CLOSED"))) {
             return "Status must be OPEN or CLOSED.";
         }
 
