@@ -147,16 +147,35 @@ PlacementRecruitmentSystem/
 
 ## Database
 
-The application uses a MySQL database named `placement_management`.
+## Database
 
-The database manages the following main entities:
+The application uses MySQL with a database named `placement_management`.
 
-- `users` – Stores user account details and roles.
-- `student_profiles` – Stores student academic and contact information.
-- `companies` – Stores registered company details.
-- `job_postings` – Stores job descriptions and eligibility requirements.
-- `job_eligible_branches` – Stores eligible branches for each job.
-- `applications` – Stores student job applications and their statuses.
+The database consists of 10 tables:
+
+| Table | Description |
+|---|---|
+| `users` | Stores user account details and roles |
+| `student_profiles` | Stores student academic and contact information |
+| `companies` | Stores registered company details |
+| `company_recruiters` | Maps recruiters to companies |
+| `jobs` | Stores job information and recruitment-round details |
+| `job_postings` | Stores job postings, requirements, and recruiter ownership |
+| `job_eligible_branches` | Stores eligible branches for job postings |
+| `applications` | Stores student job applications and statuses |
+| `recruitment_rounds` | Stores recruitment round information |
+| `application_round_results` | Stores results and feedback for recruitment rounds |
+
+### Database Setup
+
+1. Start MySQL Server.
+2. Create the database using the provided `database/schema.sql` script. The script creates the database if it does not already exist.
+3. Configure the database connection in `src/main/resources/db.properties`.
+4. Use `src/main/resources/db.properties.example` as a reference for the configuration format.
+
+The database schema includes primary keys, foreign keys, unique constraints, indexes, and check constraints to maintain data integrity.
+
+The actual database credentials are excluded from version control for security reasons.
 
 Database configuration is maintained locally in:
 
