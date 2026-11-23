@@ -237,6 +237,25 @@ The application will start with the main menu, where users can register, log in,
 Screenshots of the application will be added here to demonstrate the Student, Recruiter, and Admin dashboards and their functionalities.
 
 <!-- Add screenshots here after creating the screenshots folder. -->
+## Application Screenshots
+
+### Main Menu
+![Main Menu](screenshots/MainMenu.jpeg)
+
+### Student Dashboard
+![Student Dashboard](screenshots/studentdashboard.jpeg)
+
+### Eligible Jobs
+![Eligible Jobs](screenshots/EligibleJobs.jpeg)
+
+### Recruiter Dashboard
+![Recruiter Dashboard](screenshots/RecruiterDashboard.jpeg)
+
+### Admin Dashboard
+![Admin Dashboard](screenshots/AdminDashboard.jpeg)
+
+### Application Statistics
+![Application Statistics](screenshots/ApplicationStatistics.jpeg)
 
 ## Current Development Status
 
