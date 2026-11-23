@@ -1,10 +1,19 @@
+# Maven build files
 target/
+
+# Database credentials
 src/main/resources/db.properties
+
+# IDE files
 .idea/
 *.iml
 .vscode/
 .history/
+
+# System files
 .DS_Store
 Thumbs.db
+
+# Logs and compiled files
 *.log
 *.class
