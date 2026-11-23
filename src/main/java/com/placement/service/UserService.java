@@ -6,7 +6,9 @@ import com.placement.model.User;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.Locale;
 
 public class UserService {
 
@@ -21,20 +23,29 @@ public class UserService {
         validateName(fullName);
         validateEmail(email);
         validatePassword(password);
-        validateProfile(rollNumber, branch, cgpa, backlogs, graduationYear);
+        validateProfile(rollNumber, branch, cgpa,
+                backlogs, graduationYear);
+        validatePhone(phone);
 
-        String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(12));
+        String passwordHash = BCrypt.hashpw(
+                password, BCrypt.gensalt(12)
+        );
 
         User user = new User(
                 fullName.trim(),
-                email.trim().toLowerCase(),
+                email.trim().toLowerCase(Locale.ROOT),
                 passwordHash,
                 "STUDENT"
         );
 
         return userDAO.registerStudent(
-                user, rollNumber.trim(), branch.trim().toUpperCase(),
-                cgpa, backlogs, graduationYear, phone
+                user,
+                rollNumber.trim(),
+                branch.trim().toUpperCase(Locale.ROOT),
+                cgpa,
+                backlogs,
+                graduationYear,
+                normalizePhone(phone)
         );
     }
 
@@ -45,11 +56,13 @@ public class UserService {
         validateEmail(email);
         validatePassword(password);
 
-        String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt(12));
+        String passwordHash = BCrypt.hashpw(
+                password, BCrypt.gensalt(12)
+        );
 
         User recruiter = new User(
                 fullName.trim(),
-                email.trim().toLowerCase(),
+                email.trim().toLowerCase(Locale.ROOT),
                 passwordHash,
                 "RECRUITER"
         );
@@ -58,15 +71,17 @@ public class UserService {
     }
 
     public boolean completeStudentProfile(String email, String password,
-                                           String rollNumber, String branch,
-                                           BigDecimal cgpa, int backlogs,
-                                           int graduationYear, String phone)
+                                          String rollNumber, String branch,
+                                          BigDecimal cgpa, int backlogs,
+                                          int graduationYear, String phone)
             throws SQLException {
 
         User user = login(email, password);
 
         if (user == null) {
-            throw new IllegalArgumentException("Invalid email or password.");
+            throw new IllegalArgumentException(
+                    "Invalid email or password."
+            );
         }
 
         if (!"STUDENT".equalsIgnoreCase(user.getRole())) {
@@ -75,7 +90,9 @@ public class UserService {
             );
         }
 
-        validateProfile(rollNumber, branch, cgpa, backlogs, graduationYear);
+        validateProfile(rollNumber, branch, cgpa,
+                backlogs, graduationYear);
+        validatePhone(phone);
 
         if (userDAO.hasStudentProfile(user.getUserId())) {
             throw new IllegalArgumentException(
@@ -84,9 +101,13 @@ public class UserService {
         }
 
         return userDAO.addStudentProfile(
-                user.getUserId(), rollNumber.trim(),
-                branch.trim().toUpperCase(), cgpa,
-                backlogs, graduationYear, phone
+                user.getUserId(),
+                rollNumber.trim(),
+                branch.trim().toUpperCase(Locale.ROOT),
+                cgpa,
+                backlogs,
+                graduationYear,
+                normalizePhone(phone)
         );
     }
 
@@ -97,7 +118,9 @@ public class UserService {
             return null;
         }
 
-        User user = userDAO.findByEmail(email.trim().toLowerCase());
+        User user = userDAO.findByEmail(
+                email.trim().toLowerCase(Locale.ROOT)
+        );
 
         if (user == null) {
             return null;
@@ -113,14 +136,32 @@ public class UserService {
     private void validateName(String fullName) {
 
         if (fullName == null || fullName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be empty.");
+            throw new IllegalArgumentException(
+                    "Name cannot be empty."
+            );
+        }
+
+        if (fullName.trim().length() > 100) {
+            throw new IllegalArgumentException(
+                    "Name cannot exceed 100 characters."
+            );
         }
     }
 
     private void validateEmail(String email) {
 
-        if (email == null ||
-                !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Email cannot be empty."
+            );
+        }
+
+        String normalizedEmail = email.trim();
+
+        if (normalizedEmail.length() > 100 ||
+                !normalizedEmail.matches(
+                        "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+                )) {
             throw new IllegalArgumentException(
                     "Enter a valid email address."
             );
@@ -132,6 +173,16 @@ public class UserService {
         if (password == null || password.length() < 8) {
             throw new IllegalArgumentException(
                     "Password must contain at least 8 characters."
+            );
+        }
+
+        int passwordBytes = password.getBytes(
+                StandardCharsets.UTF_8
+        ).length;
+
+        if (passwordBytes > 72) {
+            throw new IllegalArgumentException(
+                    "Password must not exceed 72 UTF-8 bytes."
             );
         }
     }
@@ -152,7 +203,8 @@ public class UserService {
             );
         }
 
-        if (cgpa == null || cgpa.compareTo(BigDecimal.ZERO) < 0 ||
+        if (cgpa == null ||
+                cgpa.compareTo(BigDecimal.ZERO) < 0 ||
                 cgpa.compareTo(BigDecimal.TEN) > 0) {
             throw new IllegalArgumentException(
                     "CGPA must be between 0 and 10."
@@ -170,5 +222,37 @@ public class UserService {
                     "Enter a valid graduation year."
             );
         }
+    }
+
+    private void validatePhone(String phone) {
+
+        if (phone == null || phone.trim().isEmpty()) {
+            return;
+        }
+
+        String trimmedPhone = phone.trim();
+
+        if (!trimmedPhone.matches("^[0-9+()\\-\\s]+$")) {
+            throw new IllegalArgumentException(
+                    "Phone number contains invalid characters."
+            );
+        }
+
+        String digits = trimmedPhone.replaceAll("[^0-9]", "");
+
+        if (digits.length() < 7 || digits.length() > 15) {
+            throw new IllegalArgumentException(
+                    "Phone number must contain between 7 and 15 digits."
+            );
+        }
+    }
+
+    private String normalizePhone(String phone) {
+
+        if (phone == null || phone.trim().isEmpty()) {
+            return null;
+        }
+
+        return phone.trim();
     }
 }
